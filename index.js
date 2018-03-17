@@ -517,9 +517,9 @@ var parseViews = function () {
 			// store view data
 			assembly.views[collection].items[id] = {
 				name: toTitleCase(id),
-				data: fileData
+				data: fileData,
+				path: assembly.data.path
 			};
-
 		}
 
 	});
