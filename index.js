@@ -401,7 +401,7 @@ var parseMaterials = function () {
  */
 var parseDocs = function () {
 
-/* 	// reset
+	// reset
 	assembly.docs = {};
 
 	// get files
@@ -418,51 +418,7 @@ var parseDocs = function () {
 			content: md.render(fs.readFileSync(file, 'utf-8'))
 		};
 
-	}); */
-
-	// reset
-	assembly.docs = {};
-
-	// get files
-	var files = globby.sync(options.docs, { nodir: true });
-
-	files.forEach(function (file) {
-
-		var id = getName(file, true);
-
-		// determine if view is part of a collection (subdir)
-		var dirname = path.normalize(path.dirname(file)).split(path.sep).pop(),
-			collection = (dirname !== options.keys.docs) ? dirname : '';
-
-		var fileMatter = getMatter(file),
-			fileData = _.omit(fileMatter.data, 'notes');
-
-		// if this file is part of a collection
-		if (collection) {
-
-			// create collection if it doesn't exist
-			assembly.docs[collection] = assembly.docs[collection] || {
-				name: toTitleCase(collection),
-				items: {}
-			};
-
-			// store view data
-			// assembly.docs[collection].items[id] = {
-			// 	name: toTitleCase(id),
-			// 	data: fileData,
-			// 	path: assembly.data.path
-			// };
-
-			assembly.docs[collection].items[id] = {
-				name: toTitleCase(id),
-				content: md.render(fs.readFileSync(file, 'utf-8'))
-			};
-		}
-
 	});
-
-
-
 
 };
 
