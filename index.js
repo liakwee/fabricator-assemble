@@ -174,7 +174,7 @@ const assembly = {
  * @return {String}
  */
 const getName = function (filePath, preserveNumbers) {
-	// get name; replace spaces with dashes
+  // get name; replace spaces with dashes
   const name = path.basename(filePath, path.extname(filePath)).replace(/\s/g, '-');
   return preserveNumbers ? name : name.replace(/^[0-9|\.\-]+/, '');
 };
@@ -195,33 +195,33 @@ const getMatter = function (file) {
  * @param  {Object} e Error object
  */
 const handleError = function (e) {
-	// default to exiting process on error
+  // default to exiting process on error
   let exit = true;
 
-	// construct error object by combining argument with defaults
+  // construct error object by combining argument with defaults
   const error = _.assign(
-		{},
+    {},
     {
       name: 'Error',
       reason: '',
       message: 'An error occurred'
     },
-		e
-	);
+    e
+  );
 
-	// call onError
+  // call onError
   if (_.isFunction(options.onError)) {
     options.onError(error);
     exit = false;
   }
 
-	// log errors
+  // log errors
   if (options.logErrors) {
     console.error(chalk.bold.red(`Error (fabricator-assemble): ${e.message}\n`), e.stack);
     exit = false;
   }
 
-	// break the build if desired
+  // break the build if desired
   if (exit) {
     console.error(chalk.bold.red(`Error (fabricator-assemble): ${e.message}\n`), e.stack);
     process.exit(1);
@@ -234,7 +234,7 @@ const handleError = function (e) {
  * @return {Object}
  */
 const buildContext = function (data, hash) {
-	// set keys to whatever is defined
+  // set keys to whatever is defined
   const materials = {};
   materials[options.keys.materials] = assembly.materials;
 
@@ -245,16 +245,16 @@ const buildContext = function (data, hash) {
   docs[options.keys.docs] = assembly.docs;
 
   return _.assign(
-		{},
-		data,
-		assembly.data,
-		assembly.materialData,
-		options.buildData,
-		materials,
-		views,
-		docs,
-		hash
-	);
+    {},
+    data,
+    assembly.data,
+    assembly.materialData,
+    options.buildData,
+    materials,
+    views,
+    docs,
+    hash
+  );
 };
 
 /**
@@ -264,8 +264,8 @@ const buildContext = function (data, hash) {
  */
 const toTitleCase = function (str) {
   return str
-		.replace(/(\-|_)/g, ' ')
-		.replace(/\w\S*/g, word => word.charAt(0).toUpperCase() + word.substr(1).toLowerCase());
+    .replace(/(\-|_)/g, ' ')
+    .replace(/\w\S*/g, word => word.charAt(0).toUpperCase() + word.substr(1).toLowerCase());
 };
 
 /**
@@ -282,49 +282,49 @@ const wrapPage = function (page, layout) {
  * Parse each material - collect data, create partial
  */
 const parseMaterials = function () {
-	// reset object
+  // reset object
   assembly.materials = {};
 
-	// get files and dirs
+  // get files and dirs
   const files = globby.sync(options.materials, { nodir: true, nosort: true });
 
-	// build a glob for identifying directories
+  // build a glob for identifying directories
   options.materials =
-		typeof options.materials === 'string' ? [options.materials] : options.materials;
+    typeof options.materials === 'string' ? [options.materials] : options.materials;
   const dirsGlob = options.materials.map(pattern => `${path.dirname(pattern)}/*/`);
 
-	// get all directories
-	// do a new glob; trailing slash matches only dirs
+  // get all directories
+  // do a new glob; trailing slash matches only dirs
   const dirs = globby.sync(dirsGlob).map(
-		dir =>
-			path
-				.normalize(dir)
-				.split(path.sep)
-				.slice(-2, -1)[0]
-	);
+    dir =>
+      path
+        .normalize(dir)
+        .split(path.sep)
+        .slice(-2, -1)[0]
+  );
 
-	// stub out an object for each collection and subCollection
+  // stub out an object for each collection and subCollection
   files.forEach((file) => {
     const parent = getName(
-			path
-				.normalize(path.dirname(file))
-				.split(path.sep)
-				.slice(-2, -1)[0],
-			true
-		);
+      path
+        .normalize(path.dirname(file))
+        .split(path.sep)
+        .slice(-2, -1)[0],
+      true
+    );
     const collection = getName(
-			path
-				.normalize(path.dirname(file))
-				.split(path.sep)
-				.pop(),
-			true
-		);
+      path
+        .normalize(path.dirname(file))
+        .split(path.sep)
+        .pop(),
+      true
+    );
     const isSubCollection = dirs.indexOf(parent) > -1;
 
-		// get the material base dir for stubbing out the base object for each category (e.g. component, structure)
+    // get the material base dir for stubbing out the base object for each category (e.g. component, structure)
     const materialBase = isSubCollection ? parent : collection;
 
-		// stub the base object
+    // stub the base object
     assembly.materials[materialBase] = assembly.materials[materialBase] || {
       name: toTitleCase(getName(materialBase)),
       items: {}
@@ -332,40 +332,40 @@ const parseMaterials = function () {
 
     if (isSubCollection) {
       assembly.materials[parent].items[collection] = assembly.materials[parent].items[
-				collection
-			] || {
-  name: toTitleCase(getName(collection)),
-  items: {}
-};
+        collection
+      ] || {
+          name: toTitleCase(getName(collection)),
+          items: {}
+        };
     }
   });
 
-	// iterate over each file (material)
+  // iterate over each file (material)
   files.forEach((file) => {
-		// get info
+    // get info
     const fileMatter = getMatter(file);
     const collection = getName(
-			path
-				.normalize(path.dirname(file))
-				.split(path.sep)
-				.pop(),
-			true
-		);
+      path
+        .normalize(path.dirname(file))
+        .split(path.sep)
+        .pop(),
+      true
+    );
     const parent = path
-			.normalize(path.dirname(file))
-			.split(path.sep)
-			.slice(-2, -1)[0];
+      .normalize(path.dirname(file))
+      .split(path.sep)
+      .slice(-2, -1)[0];
     const isSubCollection = dirs.indexOf(parent) > -1;
     const id = isSubCollection ? `${getName(collection)}.${getName(file)}` : getName(file);
     const key = isSubCollection ? `${collection}.${getName(file, true)}` : getName(file, true);
 
-		// get material front-matter, omit `notes`
+    // get material front-matter, omit `notes`
     const localData = _.omit(fileMatter.data, 'notes');
 
-		// trim whitespace from material content
+    // trim whitespace from material content
     let content = fileMatter.content.replace(/^(\s*(\r?\n|\r))+|(\s*(\r?\n|\r))+$/g, '');
 
-		// capture meta data for the material
+    // capture meta data for the material
     if (!isSubCollection) {
       assembly.materials[collection].items[key] = {
         name: toTitleCase(id),
@@ -381,28 +381,28 @@ const parseMaterials = function () {
       };
     }
 
-		// store material-name-spaced local data in template context
+    // store material-name-spaced local data in template context
     assembly.materialData[id.replace(/\./g, '-')] = localData;
 
-		// replace local fields on the fly with name-spaced keys
-		// this allows partials to use local front-matter data
-		// only affects the compilation environment
+    // replace local fields on the fly with name-spaced keys
+    // this allows partials to use local front-matter data
+    // only affects the compilation environment
     if (!_.isEmpty(localData)) {
       _.forEach(localData, (val, key) => {
-				// {{field}} => {{material-name.field}}
+        // {{field}} => {{material-name.field}}
         const regex = new RegExp(`(\\{\\{[#/]?)(\\s?${key}+?\\s?)(\\}\\})`, 'g');
         content = content.replace(
-					regex,
-					(match, p1, p2, p3) => `${p1 + id.replace(/\./g, '-')}.${p2.replace(/\s/g, '')}${p3}`
-				);
+          regex,
+          (match, p1, p2, p3) => `${p1 + id.replace(/\./g, '-')}.${p2.replace(/\s/g, '')}${p3}`
+        );
       });
     }
 
-		// register the partial
+    // register the partial
     Handlebars.registerPartial(id, content);
   });
 
-	// sort materials object alphabetically
+  // sort materials object alphabetically
   assembly.materials = sortObj(assembly.materials, 'order');
 
   for (const collection in assembly.materials) {
@@ -414,17 +414,17 @@ const parseMaterials = function () {
  * Parse markdown files as "docs"
  */
 const parseDocs = function () {
-	// reset
+  // reset
   assembly.docs = {};
 
-	// get files
+  // get files
   const files = globby.sync(options.docs, { nodir: true });
 
-	// iterate over each file (material)
+  // iterate over each file (material)
   files.forEach((file) => {
     const id = getName(file);
 
-		// save each as unique prop
+    // save each as unique prop
     assembly.docs[id] = {
       name: toTitleCase(id),
       content: md.render(fs.readFileSync(file, 'utf-8'))
@@ -436,13 +436,13 @@ const parseDocs = function () {
  * Parse layout files
  */
 const parseLayouts = function () {
-	// reset
+  // reset
   assembly.layouts = {};
 
-	// get files
+  // get files
   const files = globby.sync(options.layouts, { nodir: true });
 
-	// save content of each file
+  // save content of each file
   files.forEach((file) => {
     const id = getName(file);
     const content = fs.readFileSync(file, 'utf-8');
@@ -454,10 +454,10 @@ const parseLayouts = function () {
  * Register layout includes has Handlebars partials
  */
 const parseLayoutIncludes = function () {
-	// get files
+  // get files
   const files = globby.sync(options.layoutIncludes, { nodir: true });
 
-	// save content of each file
+  // save content of each file
   files.forEach((file) => {
     const id = getName(file);
     const content = fs.readFileSync(file, 'utf-8');
@@ -469,13 +469,13 @@ const parseLayoutIncludes = function () {
  * Parse data files and save JSON
  */
 const parseData = function () {
-	// reset
+  // reset
   assembly.data = {};
 
-	// get files
+  // get files
   const files = globby.sync(options.data, { nodir: true });
 
-	// save content of each file
+  // save content of each file
   files.forEach((file) => {
     const id = getName(file);
     const content = yaml.safeLoad(fs.readFileSync(file, 'utf-8'));
@@ -487,38 +487,37 @@ const parseData = function () {
  * Get meta data for views
  */
 const parseViews = function () {
-	// reset
+  // reset
   assembly.views = {};
 
-	// get files
+  // get files
   const files = globby.sync(options.views, { nodir: true });
 
   files.forEach((file) => {
     const id = getName(file, true);
 
-		// determine if view is part of a collection (subdir)
+    // determine if view is part of a collection (subdir)
     let dirname = path
-				.normalize(path.dirname(file))
-				.split(path.sep)
-				.pop(),
+      .normalize(path.dirname(file))
+      .split(path.sep)
+      .pop(),
       collection = dirname !== options.keys.views ? dirname : '';
 
     let fileMatter = getMatter(file),
       fileData = _.omit(fileMatter.data, 'notes');
 
-		// if this file is part of a collection
+    // if this file is part of a collection
     if (collection) {
-			// create collection if it doesn't exist
+      // create collection if it doesn't exist
       assembly.views[collection] = assembly.views[collection] || {
         name: toTitleCase(collection),
         items: {}
       };
 
-		const newID = id.replace(/^\d*[-_\s]*/, '');
-		console.log('collection:', newID);
-			// store view data
-      assembly.views[collection].items[newID] = {
-        name: toTitleCase(newID),
+      const tempID = id.replace(/^\d+\-/, '');
+      // store view data
+      assembly.views[collection].items[tempID] = {
+        name: toTitleCase(tempID),
         data: fileData,
         path: assembly.data.path
       };
@@ -530,19 +529,19 @@ const parseViews = function () {
  * Register new Handlebars helpers
  */
 const registerHelpers = function () {
-	// get helper files
+  // get helper files
   const resolveHelper = path.join.bind(null, __dirname, 'helpers');
   const localHelpers = fs.readdirSync(resolveHelper());
   const userHelpers = options.helpers;
 
-	// register local helpers
+  // register local helpers
   localHelpers.map((helper) => {
     const key = helper.match(/(^\w+?-)(.+)(\.\w+)/)[2];
     const path = resolveHelper(helper);
     Handlebars.registerHelper(key, require(path));
   });
 
-	// register user helpers
+  // register user helpers
   for (const helper in userHelpers) {
     if (userHelpers.hasOwnProperty(helper)) {
       Handlebars.registerHelper(helper, userHelpers[helper]);
@@ -562,16 +561,16 @@ const registerHelpers = function () {
 	 * {{material name context}}
 	 */
   Handlebars.registerHelper(inflect.singularize(options.keys.materials), (name, context, opts) => {
-		// remove leading numbers from name keyword
-		// partials are always registered with the leading numbers removed
-		// This is for both the subCollection as the file(name) itself!
+    // remove leading numbers from name keyword
+    // partials are always registered with the leading numbers removed
+    // This is for both the subCollection as the file(name) itself!
     const key = name.replace(/(\d+[\-\.])+/, '').replace(/(\d+[\-\.])+/, '');
 
-		// attempt to find pre-compiled partial
+    // attempt to find pre-compiled partial
     let template = Handlebars.partials[key],
       fn;
 
-		// compile partial if not already compiled
+    // compile partial if not already compiled
     if (!_.isFunction(template)) {
       fn = Handlebars.compile(template);
     }
@@ -579,11 +578,11 @@ const registerHelpers = function () {
       fn = template;
     }
 
-		// return beautified html with trailing whitespace removed
+    // return beautified html with trailing whitespace removed
     return beautifyHtml(
-			fn(buildContext(context, opts.hash)).replace(/^\s+/, ''),
-			options.beautifier
-		);
+      fn(buildContext(context, opts.hash)).replace(/^\s+/, ''),
+      options.beautifier
+    );
   });
 };
 
@@ -592,10 +591,10 @@ const registerHelpers = function () {
  * @param  {Objet} options  User options
  */
 const setup = function (userOptions) {
-	// merge user options with defaults
+  // merge user options with defaults
   options = _.merge({}, defaults, userOptions);
 
-	// setup steps
+  // setup steps
   registerHelpers();
   parseLayouts();
   parseLayoutIncludes();
@@ -609,25 +608,25 @@ const setup = function (userOptions) {
  * Assemble views using materials, data, and docs
  */
 const assemble = function () {
-	// get files
+  // get files
   const files = globby.sync(options.views, { nodir: true });
 
-	// create output directory if it doesn't already exist
+  // create output directory if it doesn't already exist
   mkdirp.sync(options.dest);
 
-	// iterate over each view
+  // iterate over each view
   files.forEach((file) => {
     const id = getName(file);
 
-		// build filePath
+    // build filePath
     let dirname = path
-				.normalize(path.dirname(file))
-				.split(path.sep)
-				.pop(),
+      .normalize(path.dirname(file))
+      .split(path.sep)
+      .pop(),
       collection = dirname !== options.keys.views ? dirname : '',
       filePath = path.normalize(path.join(options.dest, collection, path.basename(file)));
 
-		// get page gray matter and content
+    // get page gray matter and content
     let pageMatter = getMatter(file),
       pageContent = pageMatter.content;
 
@@ -635,12 +634,12 @@ const assemble = function () {
       pageMatter.data.baseurl = '..';
     }
 
-		// template using Handlebars
+    // template using Handlebars
     let source = wrapPage(pageContent, assembly.layouts[pageMatter.data.layout || options.layout]),
       context = buildContext(pageMatter.data),
       template = Handlebars.compile(source);
 
-		// redefine file path if dest front-matter variable is defined
+    // redefine file path if dest front-matter variable is defined
     if (pageMatter.data.dest) {
       filePath = path.normalize(pageMatter.data.dest);
     }
@@ -649,10 +648,12 @@ const assemble = function () {
       filePath = path.normalize(path.join(options.destMap[collection], path.basename(file)));
     }
 
-		// change extension to .html
+    // change extension to .html
     filePath = filePath.replace(/\.[0-9a-z]+$/, options.extension);
+    filePath = filePath.replace(/\d+\-/, '');
 
-		// write file
+
+    // write file
     mkdirp.sync(path.dirname(filePath));
     try {
       fs.writeFileSync(filePath, template(context));
@@ -661,15 +662,15 @@ const assemble = function () {
       const originFilePath = `${path.dirname(file)}/${path.basename(file)}`;
 
       console.error(
-				'\x1b[31m \x1b[1mBold',
-				'Error while comiling template',
-				originFilePath,
-				'\x1b[0m \n'
-			);
+        '\x1b[31m \x1b[1mBold',
+        'Error while comiling template',
+        originFilePath,
+        '\x1b[0m \n'
+      );
       throw e;
     }
 
-		// write a copy file if custom dest-copy front-matter variable is defined
+    // write a copy file if custom dest-copy front-matter variable is defined
     if (pageMatter.data['dest-copy']) {
       const copyPath = path.normalize(pageMatter.data['dest-copy']);
       mkdirp.sync(path.dirname(copyPath));
@@ -684,10 +685,10 @@ const assemble = function () {
  */
 module.exports = function (options) {
   try {
-		// setup assembly
+    // setup assembly
     setup(options);
 
-		// assemble
+    // assemble
     assemble();
   }
   catch (e) {
