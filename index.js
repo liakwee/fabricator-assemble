@@ -12,7 +12,7 @@ const md = require('markdown-it')({ html: true, linkify: true }).use(
   {
     autofill: true
   }
-);
+).use(require('markdown-it-underline'));
 
 const mkdirp = require('mkdirp');
 const path = require('path');
