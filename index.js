@@ -7,7 +7,9 @@ const globby = require('globby');
 const Handlebars = require('handlebars');
 const inflect = require('i')();
 const matter = require('gray-matter');
-const md = require('markdown-it')({ html: true, linkify: true });
+const md = require('markdown-it')({ html: true, linkify: true }).use(require('markdown-it-imsize'), {
+  autofill: true
+});
 const mkdirp = require('mkdirp');
 const path = require('path');
 const sortObj = require('sort-object');
@@ -263,9 +265,7 @@ const buildContext = function (data, hash) {
  * @return {String}
  */
 const toTitleCase = function (str) {
-  return str
-    .replace(/(\-|_)/g, ' ')
-    .replace(/\w\S*/g, word => word.charAt(0).toUpperCase() + word.substr(1).toLowerCase());
+  return str.replace(/(\-|_)/g, ' ').replace(/\w\S*/g, word => word.charAt(0).toUpperCase() + word.substr(1).toLowerCase());
 };
 
 /**
@@ -295,13 +295,10 @@ const parseMaterials = function () {
 
   // get all directories
   // do a new glob; trailing slash matches only dirs
-  const dirs = globby.sync(dirsGlob).map(
-    dir =>
-      path
-        .normalize(dir)
-        .split(path.sep)
-        .slice(-2, -1)[0]
-  );
+  const dirs = globby.sync(dirsGlob).map(dir => path
+    .normalize(dir)
+    .split(path.sep)
+    .slice(-2, -1)[0]);
 
   // stub out an object for each collection and subCollection
   files.forEach((file) => {
@@ -391,10 +388,7 @@ const parseMaterials = function () {
       _.forEach(localData, (val, key) => {
         // {{field}} => {{material-name.field}}
         const regex = new RegExp(`(\\{\\{[#/]?)(\\s?${key}+?\\s?)(\\}\\})`, 'g');
-        content = content.replace(
-          regex,
-          (match, p1, p2, p3) => `${p1 + id.replace(/\./g, '-')}.${p2.replace(/\s/g, '')}${p3}`
-        );
+        content = content.replace(regex, (match, p1, p2, p3) => `${p1 + id.replace(/\./g, '-')}.${p2.replace(/\s/g, '')}${p3}`);
       });
     }
 
@@ -514,10 +508,9 @@ const parseViews = function () {
         items: {}
       };
 
-      const tempID = id.replace(/^\d+\-/, '');
       // store view data
-      assembly.views[collection].items[tempID] = {
-        name: toTitleCase(tempID),
+      assembly.views[collection].items[id] = {
+        name: toTitleCase(id),
         data: fileData,
         path: assembly.data.path
       };
@@ -560,7 +553,11 @@ const registerHelpers = function () {
 	 * @example
 	 * {{material name context}}
 	 */
-  Handlebars.registerHelper(inflect.singularize(options.keys.materials), (name, context, opts) => {
+  Handlebars.registerHelper(inflect.singularize(options.keys.materials), (
+    name,
+    context,
+    opts
+  ) => {
     // remove leading numbers from name keyword
     // partials are always registered with the leading numbers removed
     // This is for both the subCollection as the file(name) itself!
@@ -650,8 +647,6 @@ const assemble = function () {
 
     // change extension to .html
     filePath = filePath.replace(/\.[0-9a-z]+$/, options.extension);
-    filePath = filePath.replace(/\d+\-/, '');
-
 
     // write file
     mkdirp.sync(path.dirname(filePath));

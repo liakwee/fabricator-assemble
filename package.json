@@ -28,7 +28,8 @@
     "lodash": "^4.13.1",
     "markdown-it": "^7.0.0",
     "mkdirp": "^0.5.1",
-    "sort-object": "^3.0.2"
+    "sort-object": "^3.0.2",
+    "markdown-it-imsize": "^2.0.1"
   },
   "devDependencies": {
     "del": "^2.2.1",
